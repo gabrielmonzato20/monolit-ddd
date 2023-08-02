@@ -21,6 +21,7 @@ export default class Client extends BaseEntity implements AggregateRoot {
     this._name = props.name;
     this._email = props.email;
     this._address = props.address;
+    this._validade()
   }
 
   get name(): string {
@@ -33,5 +34,17 @@ export default class Client extends BaseEntity implements AggregateRoot {
 
   get address(): string {
     return this._address;
+  }
+
+  _validade(): void {
+    if(this._name == "" || this._name == undefined || this._name == null){
+      throw new Error("Name must be present");
+    }
+    if(this._email == "" || this._email == undefined || this._email == null){
+      throw new Error("Name must be present");
+    }
+    if(this._address == "" || this._address == undefined || this._address == null){
+      throw new Error("Name must be present");
+    }
   }
 }

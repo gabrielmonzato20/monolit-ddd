@@ -3,45 +3,57 @@ import InvoiceFacadeFactory from "../factory/invoice.facade.factory";
 import InvoiceProductModel from "../repository/invoice-product.model";
 import InvoiceModel from "../repository/invoice.model";
 import ProductModel from "../repository/product.model";
-import InvoiceFacade from "./invoice.facade";
+import InvoiceFacade, { FacadeProps } from "./invoice.facade";
 import { InvoiceFacadeFindOutputDTO, InvoiceFacadeGenerateInputDTO, InvoiceFacadeGenerateOutputDTO } from "./invoice.facade.interface";
+import InvoiceRepository from "../repository/invoice.repository";
+import FindInvoceUsecase from "../usecase/find-invoce/find-invoce.usecase";
+import GenerateInvoiceUseCase from "../usecase/generate-invoce/generate-invoce.usecase";
 
 describe("InvoiceFacade test", () => {
     let sequelize: Sequelize;
   
-    // beforeEach(async () => {
-    //   sequelize = new Sequelize({
-    //     dialect: "sqlite",
-    //     storage: ":memory:",
-    //     logging: false,
-    //     sync: { force: true },
-    //   });
-    //   await sequelize.addModels([InvoiceModel,ProductModel,InvoiceProductModel]);
+    beforeEach(async () => {
+      sequelize = new Sequelize({
+        dialect: "sqlite",
+        storage: ":memory:",
+        logging: false,
+        sync: { force: true },
+      });
+      await sequelize.addModels([InvoiceModel,ProductModel,InvoiceProductModel]);
 
-    //   await sequelize.sync();
-    // });
+      await sequelize.sync();
+    });
   
-    // afterEach(async () => {
-    //   await sequelize.close();
+    afterEach(async () => {
+      await sequelize.close();
 
-    // });
-    beforeAll(async () => {
-        sequelize = new Sequelize({
-          dialect: "sqlite",
-          storage: ":memory:",
-          logging: false,
-          sync: { force: true },
-        });
-        await sequelize.addModels([InvoiceModel, ProductModel, InvoiceProductModel]);
-        await sequelize.sync();
-      });
+    });
+    // beforeAll(async () => {
+    //     sequelize = new Sequelize({
+    //       dialect: "sqlite",
+    //       storage: ":memory:",
+    //       logging: false,
+    //       sync: { force: true },
+    //     });
+    //     await sequelize.addModels([InvoiceModel, ProductModel, InvoiceProductModel]);
+    //     await sequelize.sync();
+    //   });
     
-      afterAll(async () => {
-        await sequelize.close();
-      });
-    const invoceFacade:InvoiceFacade = InvoiceFacadeFactory.create();
+    //   afterAll(async () => {
+    //     await sequelize.close();
+    //   });
 
     it("should generate a invoice thought facade", async () => {
+        //const invoceFacade:InvoiceFacade = InvoiceFacadeFactory.create();
+        const invoiceRepository :InvoiceRepository = new InvoiceRepository();
+        const findInvoice:FindInvoceUsecase = new FindInvoceUsecase(invoiceRepository)
+        const generateInvoice:GenerateInvoiceUseCase = new GenerateInvoiceUseCase(invoiceRepository)
+
+        const props:FacadeProps = {
+            findInvoice: findInvoice,
+            generateInvoice: generateInvoice
+        }
+        const facade:InvoiceFacade = new InvoiceFacade(props);
         const input :InvoiceFacadeGenerateInputDTO = {
             name:"Pagamento curso",
             document:"000000000-0000000000000-00000000000",
@@ -77,7 +89,7 @@ describe("InvoiceFacade test", () => {
                 price:item.price
             })
         }))
-        const output:InvoiceFacadeGenerateOutputDTO = await invoceFacade.generate(input);
+        const output:InvoiceFacadeGenerateOutputDTO = await facade.generate(input);
         expect(output.id).toBeDefined();
         expect(input.document).toBe(output.document);
         expect(input.name).toBe(output.name);
@@ -90,7 +102,17 @@ describe("InvoiceFacade test", () => {
     })
 
     it("should find a invoice thought facade", async () => {
-        const input :InvoiceFacadeGenerateInputDTO = {
+       // const invoceFacade:InvoiceFacade = InvoiceFacadeFactory.create();
+       const invoiceRepository :InvoiceRepository = new InvoiceRepository();
+       const findInvoice:FindInvoceUsecase = new FindInvoceUsecase(invoiceRepository)
+       const generateInvoice:GenerateInvoiceUseCase = new GenerateInvoiceUseCase(invoiceRepository)
+
+       const props:FacadeProps = {
+           findInvoice: findInvoice,
+           generateInvoice: generateInvoice
+       }
+       const facade:InvoiceFacade = new InvoiceFacade(props);
+       const input :InvoiceFacadeGenerateInputDTO = {
             id:"1",
             name:"Pagamento curso",
             document:"000000000-0000000000000-00000000000",
@@ -146,7 +168,7 @@ describe("InvoiceFacade test", () => {
             updatedAt: new Date()
         },
         {include: [{model:InvoiceProductModel}],})
-        const output:InvoiceFacadeFindOutputDTO = await invoceFacade.find({id:invoceCreated.id});
+        const output:InvoiceFacadeFindOutputDTO = await facade.find({id:invoceCreated.id});
         expect(output.id).toBeDefined();
         expect(input.document).toBe(output.document);
         expect(input.name).toBe(output.name);

@@ -24,6 +24,7 @@ export default class Product extends BaseEntity implements AggregateRoot {
     this._description = props.description;
     this._purchasePrice = props.purchasePrice;
     this._stock = props.stock;
+    this._validate()
   }
 
   get name(): string {
@@ -56,5 +57,20 @@ export default class Product extends BaseEntity implements AggregateRoot {
 
   set purchasePrice(purchasePrice: number) {
     this._purchasePrice = purchasePrice;
+  }
+
+  _validate():void{
+    if( this._name == null || this._name == undefined || this.name == ""){
+      throw new Error("Name must be fill")
+
+    }
+    if( this._stock < 0 || this._stock == undefined || this._stock == null){
+      throw new Error("Stock must be equal or grater than zero")
+
+    }
+    if( this._purchasePrice < 0|| this._purchasePrice == undefined || this._purchasePrice == null ){
+      throw new Error("PurcharsePrice must be equal or grater than zero")
+
+    }
   }
 }
